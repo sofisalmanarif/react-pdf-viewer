@@ -121,33 +121,36 @@ export const useSearch = (
 
     // Private
     // -------
-
-    const getTextContents = (): Promise<string[]> => {
+    const getTextContents = (): Promise<string[][]> => {
         const currentDoc = currentDocRef.current;
         if (!currentDoc) {
             return Promise.resolve([]);
         }
-
+    
         const promises = Array(currentDoc.numPages)
             .fill(0)
             .map((_, pageIndex) =>
                 getPage(currentDoc, pageIndex)
-                    .then((page) => {
-                        return page.getTextContent();
-                    })
+                    .then((page) => page.getTextContent())
                     .then((content) => {
-                        const pageContent = content.items.map((item) => item.str || '').join('');
+                        // Split page content into paragraphs
+                        const paragraphs = content.items
+                            .map((item) => item.str || '')
+                            .join('')
+                            .split(/\n{2,}|\r\n{2,}/); // Split by double newlines for paragraphs
                         return Promise.resolve({
-                            pageContent,
+                            paragraphs,
                             pageIndex,
                         });
                     }),
             );
+    
         return Promise.all(promises).then((data) => {
             data.sort((a, b) => a.pageIndex - b.pageIndex);
-            return Promise.resolve(data.map((item) => item.pageContent));
+            return Promise.resolve(data.map((item) => item.paragraphs));
         });
     };
+    
 
     const jumpToGivenMatch = (match: Match): Match => {
         const jumpToPage = store.get('jumpToPage');

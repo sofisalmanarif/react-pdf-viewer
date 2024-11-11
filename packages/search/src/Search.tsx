@@ -35,7 +35,7 @@ export interface RenderSearchProps {
 
 type RenderSearch = (props: RenderSearchProps) => React.ReactElement;
 
-export interface SearchProps {
+export interface xSearchProps {
     children: RenderSearch;
 }
 
